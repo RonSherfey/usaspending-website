@@ -4,8 +4,6 @@
  */
 
 import React from 'react';
-import kGlobalConstants from 'GlobalConstants';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ExternalLink from 'components/sharedComponents/ExternalLink';
 
 const DataQuality = () => (
@@ -50,28 +48,18 @@ const DataQuality = () => (
             </ul>
             <p>
                 To ensure that contract data is accurate, the Office of Management and
-                Budget issues the&nbsp;
-                <ExternalLink url="https://sam.gov/SAM/transcript/govt-wide_procurement_data_quality_summary.pdf">
+                Budget issues the{' '}
+                <a
+                    href="https://www.fsd.gov/gsafsd_sp?id=kb_article_view&sysparm_article=KB0048871"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="https://www.fsd.gov/gsafsd_sp?id=kb_article_view&sysparm_article=KB0048871"
+                    title="https://www.fsd.gov/gsafsd_sp?id=kb_article_view&sysparm_article=KB0048871">
                     Federal Government Procurement Data Quality Summary
-                </ExternalLink>
+                </a>
                 &nbsp;about data submitted by the agencies to the Federal Procurement
                 Data System (FPDS). If there are any discrepancies in procurement data, FPDS
-                is the authoritative source. In addition, the federal agencies&apos;
-                raw quarterly submission files, including Quarterly Assurance Statements from Senior Accountable Officials of each agency about known data quality issues, are&nbsp;
-                <a
-                    target="_blank"
-                    href={`${kGlobalConstants.FILES_SERVER_BASE_URL}/agency_submissions/`}
-                    rel="noopener noreferrer"
-                    aria-label="Raw quarterly submission files">
-                    available here
-                    <span
-                        data-href={`${kGlobalConstants.FILES_SERVER_BASE_URL}/agency_submissions/`}
-                        className="usa-button-link__icon">
-                        <FontAwesomeIcon
-                            data-href={`${kGlobalConstants.FILES_SERVER_BASE_URL}/agency_submissions/`}
-                            icon="external-link-alt" />
-                    </span>
-                </a>.
+                is the authoritative source.
             </p>
             <p>
                 Additionally, the Inspector General of each agency must issue reports to

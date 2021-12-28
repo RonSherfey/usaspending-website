@@ -4,24 +4,62 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
+import GlobalConstants from 'GlobalConstants';
+import { useQueryParams } from 'helpers/queryParams';
 import BaseOverview from 'models/v2/covid19/BaseOverview';
 import { fetchOverview, fetchAwardAmounts } from 'apis/disaster';
 import { useDefCodes } from 'containers/covid19/WithDefCodes';
-import { setOverview, setTotals } from 'redux/actions/covid19/covid19Actions';
+import { setOverview, setTotals, setDefcParams, resetOverview } from 'redux/actions/covid19/covid19Actions';
+import { defcByPublicLaw } from 'dataMapping/covid19/covid19';
 import Covid19Page from 'components/covid19/Covid19Page';
 
 require('pages/covid19/index.scss');
 
 const Covid19Container = () => {
     const [, areDefCodesLoading, defCodes] = useDefCodes();
+    const { defcParams } = useSelector((state) => state.covid19);
     const overviewRequest = useRef(null);
     const awardAmountRequest = useRef(null);
     const dispatch = useDispatch();
+    const history = useHistory();
+    let { publicLaw } = useQueryParams();
+    publicLaw = publicLaw && publicLaw.toLowerCase();
 
     useEffect(() => {
+        /** Default to all DEFC if:
+         * 1) no public law param is defined
+         * 2) the public law param is invalid
+         * 3) the public law param is for ARP, but the ARP filter is not yet released
+         */
+
+        if (!publicLaw ||
+            !(publicLaw === 'all' || (publicLaw in defcByPublicLaw)) ||
+            (publicLaw === 'american-rescue-plan' && !GlobalConstants.ARP_RELEASED)) {
+            history.replace({
+                pathname: '',
+                search: '?publicLaw=all'
+            });
+        }
+        else if (!areDefCodesLoading) {
+            // set DEFC params based on the currently selected public law
+            if (publicLaw === 'all') {
+                // use all Covid 19 DEFC
+                dispatch(setDefcParams(defCodes.filter((c) => c.disaster === 'covid_19').map((code) => code.code)));
+            }
+            else {
+                // use codes for selected publicLaw
+                dispatch(setDefcParams(defcByPublicLaw[publicLaw]));
+            }
+        }
+    }, [publicLaw, areDefCodesLoading]);
+
+    useEffect(() => {
+        dispatch(resetOverview());
         const getOverviewData = async () => {
-            overviewRequest.current = fetchOverview(defCodes.filter((c) => c.disaster === 'covid_19').map((code) => code.code));
+            const overviewDefc = defcParams || defCodes.filter((c) => c.disaster === 'covid_19').map((code) => code.code);
+            overviewRequest.current = fetchOverview(overviewDefc);
             try {
                 const { data } = await overviewRequest.current.promise;
                 const newOverview = Object.create(BaseOverview);
@@ -29,13 +67,13 @@ const Covid19Container = () => {
                 dispatch(setOverview(newOverview));
             }
             catch (e) {
-                console.log(' Error Overview : ', e.message);
+                console.error(' Error Overview : ', e.message);
             }
         };
         const getAllAwardTypesAmount = async () => {
             const params = {
                 filter: {
-                    def_codes: defCodes.filter((c) => c.disaster === 'covid_19').map((code) => code.code)
+                    def_codes: defcParams
                 }
             };
             awardAmountRequest.current = fetchAwardAmounts(params);
@@ -51,10 +89,10 @@ const Covid19Container = () => {
                 dispatch(setTotals('', totals));
             }
             catch (e) {
-                console.log(' Error Amounts : ', e.message);
+                console.error(' Error Amounts : ', e.message);
             }
         };
-        if (defCodes.length) {
+        if (defcParams && defcParams.length) {
             getOverviewData();
             getAllAwardTypesAmount();
             overviewRequest.current = null;
@@ -68,7 +106,7 @@ const Covid19Container = () => {
                 awardAmountRequest.cancel();
             }
         };
-    }, [defCodes, dispatch]);
+    }, [defCodes, defcParams, dispatch]);
 
     return (
         <Covid19Page areDefCodesLoading={areDefCodesLoading} />

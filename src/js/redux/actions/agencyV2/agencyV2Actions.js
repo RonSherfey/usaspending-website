@@ -22,6 +22,11 @@ export const resetAwardObligations = () => ({
     type: 'RESET_AWARD_OBLIGATIONS'
 });
 
+export const setSelectedSubcomponent = (subcomponent) => ({
+    type: 'SET_SUBCOMPONENT',
+    subcomponent
+});
+
 export const setAgencyRecipients = (recipientDistribution) => ({
     type: 'SET_AGENCY_RECIPIENTS',
     recipientDistribution
@@ -31,14 +36,27 @@ export const resetAgencyRecipients = () => ({
     type: 'RESET_AGENCY_RECIPIENTS'
 });
 
-export const setBudgetCategoryCount = (tab, count) => ({
-    type: 'SET_BUDGET_CATEGORY_COUNT',
-    tab,
-    count
+export const setSubagencyCount = (subagencyCount) => ({
+    type: 'SET_SUBAGENCY_COUNT',
+    subagencyCount
 });
 
-export const resetBudgetCategoryCounts = () => ({
-    type: 'RESET_BUDGET_CATEGORY_COUNTS'
+export const resetSubagencyCount = () => ({
+    type: 'RESET_SUBAGENCY_COUNT'
+});
+
+export const setSubagencyTotals = (spendingBySubagencyTotals) => ({
+    type: 'SET_SUBAGENCY_TOTALS',
+    spendingBySubagencyTotals
+});
+
+export const setAgencySlugs = (agencySlugs) => ({
+    type: 'SET_AGENCY_SLUGS',
+    agencySlugs
+});
+
+export const resetSubagencyTotals = () => ({
+    type: 'RESET_SUBAGENCY_TOTALS'
 });
 
 export const resetAgency = () => ({

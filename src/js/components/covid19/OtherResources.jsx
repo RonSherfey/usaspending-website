@@ -6,39 +6,27 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Link } from 'react-router-dom';
 
 const propTypes = {
-    handleExternalLinkClick: PropTypes.func
+    handleExternalLinkClick: PropTypes.func,
+    publicLaw: PropTypes.string
 };
 
 const OtherResources = ({
-    handleExternalLinkClick
+    handleExternalLinkClick,
+    publicLaw
 }) => {
     const handleClick = (e) => {
         e.preventDefault();
         handleExternalLinkClick(e.target.href);
     };
     return (
-        <div className="heading__container information-body">
+        <div className={`heading__container ${publicLaw === 'american-rescue-plan' ? 'information-body-arp' : 'information-body'}`}>
             <div className="resources__container">
                 <div className="bottomSection">
                     <h2 className="dsm__heading">Other Resources</h2>
                     <ul className="otherResources__list">
-                        <li>
-                            <div className="other-resources__link__container">
-                                <span className="other-resources__link__text">
-                                    Pandemic Response Accountability Committee (PRAC) -
-                                </span>
-                                <a
-                                    href="https://pandemic.oversight.gov/track-the-money"
-                                    onClick={handleClick}>
-                                    https://pandemic.oversight.gov/track-the-money&nbsp;
-                                    <span className="other-resources__link__icon">
-                                        <FontAwesomeIcon size="sm" icon="external-link-alt" />
-                                    </span>
-                                </a>
-                            </div>
-                        </li>
                         <li>
                             <div className="other-resources__link__container">
                                 <span className="other-resources__link__text">
@@ -48,6 +36,21 @@ const OtherResources = ({
                                     href="https://www.whitehouse.gov/american-rescue-plan/"
                                     onClick={handleClick}>
                                     https://www.whitehouse.gov/american-rescue-plan/&nbsp;
+                                    <span className="other-resources__link__icon">
+                                        <FontAwesomeIcon size="sm" icon="external-link-alt" />
+                                    </span>
+                                </a>
+                            </div>
+                        </li>
+                        <li>
+                            <div className="other-resources__link__container">
+                                <span className="other-resources__link__text">
+                                    Pandemic Response Accountability Committee (PRAC) -
+                                </span>
+                                <a
+                                    href="https://www.pandemicoversight.gov/"
+                                    onClick={handleClick}>
+                                    https://www.pandemicoversight.gov/&nbsp;
                                     <span className="other-resources__link__icon">
                                         <FontAwesomeIcon size="sm" icon="external-link-alt" />
                                     </span>
@@ -263,6 +266,16 @@ const OtherResources = ({
                                         <FontAwesomeIcon size="sm" icon="external-link-alt" />
                                     </span>
                                 </a>
+                            </div>
+                        </li>
+                        <li>
+                            <div className="other-resources__link__container">
+                                <span className="other-resources__link__text">
+                                    The Opportunity Project -
+                                </span>
+                                <Link to="/disaster/covid-19/the-opportunity-project">
+                                    https://www.usaspending.gov/disaster/covid-19/the-opportunity-project
+                                </Link>
                             </div>
                         </li>
                     </ul>

@@ -16,7 +16,7 @@ import MetaTags from '../sharedComponents/metaTags/MetaTags';
 import Features from './features/Features';
 import Download from './download/Download';
 import Community from './community/Community';
-import CovidVaccineLink from './CovidVaccineLink';
+import CovidVaccineLink from "./CovidVaccineLink";
 
 require('pages/homepage/homePage.scss');
 
@@ -32,7 +32,7 @@ const Homepage = () => (
             <Community />
         </main>
         <GlobalModalContainer />
-        <Footer />
+        <Footer pageName="Homepage" />
     </div>
 );
 

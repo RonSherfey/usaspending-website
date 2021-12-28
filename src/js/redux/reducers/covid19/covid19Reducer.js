@@ -10,7 +10,8 @@ export const initialState = {
     assistanceTotals: {},
     spendingByAgencyTotals: {},
     recipientTotals: {},
-    isRecipientMapLoaded: false
+    isRecipientMapLoaded: false,
+    defcParams: []
 };
 
 const covid19Reducer = (state = initialState, action) => {
@@ -20,6 +21,9 @@ const covid19Reducer = (state = initialState, action) => {
         }
         case 'SET_COVID_OVERVIEW': {
             return Object.assign({}, state, { overview: action.overview });
+        }
+        case 'RESET_COVID_OVERVIEW': {
+            return Object.assign({}, state, { overview: initialState.overview });
         }
         case 'SET_COVID_AWARD_AMOUNTS': {
             return Object.assign({}, state, { allAwardTypeTotals: action.totals });
@@ -35,6 +39,9 @@ const covid19Reducer = (state = initialState, action) => {
         }
         case 'SET_IS_RECIPIENT_MAP_LOADED': {
             return Object.assign({}, state, { isRecipientMapLoaded: action.payload });
+        }
+        case 'SET_DEFC_PARAMS': {
+            return Object.assign({}, state, { defcParams: action.defcParams });
         }
         default: return state;
     }

@@ -13,6 +13,10 @@ export const setOverview = (overview) => ({
     overview
 });
 
+export const resetOverview = () => ({
+    type: 'RESET_COVID_OVERVIEW'
+});
+
 export const setTotals = (awardType, totals) => ({
     type: `SET_COVID_AWARD_AMOUNTS${awardType && '_'}${awardType}`,
     totals
@@ -21,4 +25,9 @@ export const setTotals = (awardType, totals) => ({
 export const setIsMapLoaded = (bool) => ({
     type: 'SET_IS_RECIPIENT_MAP_LOADED',
     payload: bool
+});
+
+export const setDefcParams = (defcParams) => ({
+    type: 'SET_DEFC_PARAMS',
+    defcParams
 });

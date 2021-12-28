@@ -3,13 +3,12 @@
  * Created by Jonathan Hill 06/10/20
  */
 
-import OverviewContainer from 'containers/covid19/OverviewContainer';
-import RecipientContainer from 'containers/covid19/recipient/RecipientContainer';
-
 import React from 'react';
 import AwardSpendingAgency from 'components/covid19/awardSpendingAgency/AwardSpendingAgency';
 import BudgetCategories from 'components/covid19/budgetCategories/BudgetCategories';
 import AwardQuestion from 'components/covid19/AwardQuestions';
+import OverviewContainer from 'containers/covid19/OverviewContainer';
+import RecipientSection from 'components/covid19/recipient/RecipientSection';
 import SpendingByCFDA from 'components/covid19/assistanceListing/SpendingByCFDA';
 import { TooltipWrapper } from 'data-transparency-ui';
 import {
@@ -49,10 +48,11 @@ const awardSpendingText = (
     </div>
 );
 
-export const componentByCovid19Section = () => ({
+// eslint-disable-next-line import/prefer-default-export
+export const componentByCovid19Section = (publicLaw, handleExternalLinkClick) => ({
     overview: {
         icon: 'hand-holding-medical',
-        component: <OverviewContainer />,
+        component: <OverviewContainer publicLaw={publicLaw} />,
         headerText: totalSpendingText,
         showInMenu: true,
         showInMainSection: true,
@@ -60,20 +60,20 @@ export const componentByCovid19Section = () => ({
     },
     total_spending_by_budget_categories: {
         icon: 'cubes',
-        component: <BudgetCategories />,
+        component: <BudgetCategories publicLaw={publicLaw} />,
         headerText: totalSpendingText,
         showInMenu: true,
         showInMainSection: true,
         title: 'Total Spending by Budget Category'
     },
     award_question: {
-        component: <AwardQuestion />,
+        component: <AwardQuestion publicLaw={publicLaw} />,
         showInMenu: false,
         showInMainSection: true
     },
     award_spending_by_recipient: {
         icon: 'building',
-        component: <RecipientContainer />,
+        component: <RecipientSection publicLaw={publicLaw} />,
         headerText: awardSpendingText,
         showInMenu: true,
         showInMainSection: true,
@@ -81,7 +81,7 @@ export const componentByCovid19Section = () => ({
     },
     award_spending_by_agency: {
         icon: 'sitemap',
-        component: <AwardSpendingAgency />,
+        component: <AwardSpendingAgency publicLaw={publicLaw} />,
         headerText: awardSpendingText,
         showInMenu: true,
         showInMainSection: true,
@@ -89,7 +89,7 @@ export const componentByCovid19Section = () => ({
     },
     award_spending_by_assistance_listing: {
         icon: 'plus-circle',
-        component: <SpendingByCFDA />,
+        component: <SpendingByCFDA publicLaw={publicLaw} handleExternalLinkClick={handleExternalLinkClick} />,
         headerText: awardSpendingText,
         showInMenu: true,
         showInMainSection: true,
