@@ -50,13 +50,33 @@ export const setSubagencyTotals = (spendingBySubagencyTotals) => ({
     spendingBySubagencyTotals
 });
 
-export const setAgencySlugs = (agencySlugs) => ({
+export const setAgencySlugs = (agencySlugs, topTierCodes, agencyIds) => ({
     type: 'SET_AGENCY_SLUGS',
-    agencySlugs
+    agencySlugs,
+    topTierCodes,
+    agencyIds
 });
 
 export const resetSubagencyTotals = () => ({
     type: 'RESET_SUBAGENCY_TOTALS'
+});
+
+export const setAgencySubcomponents = (agencySubcomponentsList) => ({
+    type: 'SET_SUBCOMPONENTS_LIST',
+    agencySubcomponentsList
+});
+
+export const resetAgencySubcomponents = () => ({
+    type: 'RESET_SUBCOMPONENTS_LIST'
+});
+
+export const setFederalAccountsList = (agencyFederalAccountsList) => ({
+    type: 'SET_FEDERAL_ACC_LIST',
+    agencyFederalAccountsList
+});
+
+export const resetFederalAccountsList = () => ({
+    type: 'RESET_FEDERAL_ACC_LIST'
 });
 
 export const resetAgency = () => ({

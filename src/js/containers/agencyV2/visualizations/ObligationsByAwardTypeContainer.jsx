@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { isCancel } from 'axios';
 
 import ObligationsByAwardType from 'components/agencyV2/visualizations/ObligationsByAwardType';
-import { LoadingMessage, ErrorMessage, NoResultsMessage } from 'data-transparency-ui';
+import { LoadingMessage, ErrorMessage, GenericMessage } from 'data-transparency-ui';
 import { fetchObligationsByAwardType } from 'apis/agencyV2';
 import { setAwardObligations, resetAwardObligations } from 'redux/actions/agencyV2/agencyV2Actions';
 import { calculatePercentage } from 'helpers/moneyFormatter';
@@ -52,7 +52,7 @@ export default function ObligationsByAwardTypeContainer({ fiscalYear, windowWidt
         }
         obligationsByAwardTypeRequest.current = fetchObligationsByAwardType(toptierCode, fiscalYear);
         obligationsByAwardTypeRequest.current.promise.then((res) => {
-            if (Object.keys(res.data).length === 0) {
+            if (Object.keys(res.data).length === 0 || res.data.total_aggregated_amount === 0) {
                 setNoData(true);
                 setLoading(false);
                 obligationsByAwardTypeRequest.current = null;
@@ -73,38 +73,46 @@ export default function ObligationsByAwardTypeContainer({ fiscalYear, windowWidt
                         fadedColor: 'rgb(84, 91, 163, 25%)'
                     }
                 ];
+
                 const details = [
                     {
                         label: 'Grants',
                         color: 'rgb(230, 111, 14)',
-                        fadedColor: 'rgb(230, 111, 14, 25%)'
+                        fadedColor: 'rgb(230, 111, 14, 25%)',
+                        type: 'financial'
                     },
                     {
                         label: 'Loans',
                         color: 'rgb(255, 188, 120)',
-                        fadedColor: 'rgb(255, 188, 120, 25%)'
+                        fadedColor: 'rgb(255, 188, 120, 25%)',
+                        type: 'financial'
                     },
                     {
                         label: 'Direct Payments',
                         color: 'rgb(250, 148, 65)',
-                        fadedColor: 'rgb(250, 148, 65, 25%)'
+                        fadedColor: 'rgb(250, 148, 65, 25%)',
+                        type: 'financial'
                     },
                     {
                         label: 'Other Financial Assistance',
                         color: 'rgb(252, 226, 197)',
-                        fadedColor: 'rgb(252, 226, 197, 25%)'
+                        fadedColor: 'rgb(252, 226, 197, 25%)',
+                        type: 'financial'
                     },
                     {
                         label: 'Contracts',
                         color: 'rgb(127, 132, 186)',
-                        fadedColor: 'rgb(127, 132, 186, 25%)'
+                        fadedColor: 'rgb(127, 132, 186, 25%)',
+                        type: 'contracts'
                     },
                     {
                         label: 'IDVs',
                         color: 'rgb(169, 173, 209)',
-                        fadedColor: 'rgb(169, 173, 209, 25%)'
+                        fadedColor: 'rgb(169, 173, 209, 25%)',
+                        type: 'contracts'
                     }
                 ];
+
                 res.data.results.forEach((d) => {
                     switch (d.category) {
                         case 'grants':
@@ -167,7 +175,7 @@ export default function ObligationsByAwardTypeContainer({ fiscalYear, windowWidt
     return (<>
         {loading && <LoadingMessage />}
         {error && <ErrorMessage />}
-        {noData && <NoResultsMessage />}
+        {noData && <GenericMessage title="Chart Not Available" description="No available data to display." className="usda-message" />}
         {!loading && !error && !noData &&
             <ObligationsByAwardType
                 outer={categoriesForGraph}

@@ -12,10 +12,9 @@ const BaseAgencyOverview = {
         this.id = data.agency_id || '';
         this.toptierCode = data.toptier_code || '';
         this.logo = data.icon_filename || '';
-        this.mission = data.mission || '--';
+        this.mission = data.mission || 'Not Available';
         this.congressionalJustification = data.congressional_justification_url || '';
         this.showAboutData = data.about_agency_data || false;
-        this.subtierCount = data.subtier_agency_count || 0;
         this._defCodes = data.def_codes;
     },
 

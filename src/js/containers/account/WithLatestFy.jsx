@@ -5,7 +5,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { get } from 'lodash';
 
 import { setSubmissionPeriods } from 'redux/actions/account/accountActions';
-import { getLatestPeriodAsMoment, getLatestPeriod, fetchAllSubmissionDates } from 'helpers/accountHelper';
+import { getLatestPeriodAsMoment, getLatestPeriod } from 'helpers/accountHelper';
+import { fetchAllSubmissionDates } from 'apis/account';
 import {
     isPeriodVisible,
     isPeriodSelectable,
@@ -82,6 +83,14 @@ export const useLatestAccountData = () => {
 export const useValidTimeBasedQueryParams = (currentUrlFy, currentUrlPeriod = null, requiredParams = ['fy', 'period']) => {
     const history = useHistory();
     const existingParams = useQueryParams();
+    // eslint-disable-next-line eqeqeq
+    if (existingParams.fy && existingParams.fy != parseInt(existingParams.fy, 10)) {
+        existingParams.fy = null;
+    }
+    // eslint-disable-next-line eqeqeq
+    if (existingParams.period && existingParams.period != parseInt(existingParams.period, 10)) {
+        existingParams.period = null;
+    }
     const [, submissionPeriods, latestSubmission] = useLatestAccountData();
     const { year: latestFy, period: latestPeriod } = latestSubmission;
     const [{ period, fy }, setYearAndPeriod] = useState({ period: '', fy: '' });

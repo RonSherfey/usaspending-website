@@ -3,16 +3,20 @@
  * Created by Lizzie Salita 10/27/21
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
-import { FlexGridRow, FlexGridCol, FlexGridContainer } from 'data-transparency-ui';
-import { setSelectedSubcomponent } from 'redux/actions/agencyV2/agencyV2Actions';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { FlexGridRow, FlexGridCol, Pagination, LoadingMessage } from 'data-transparency-ui';
+import { setSelectedSubcomponent, setAgencySubcomponents, resetAgencySubcomponents, setFederalAccountsList, resetFederalAccountsList } from 'redux/actions/agencyV2/agencyV2Actions';
+import { fetchSubcomponentsList, fetchFederalAccountsList } from 'apis/agencyV2';
+import { parseRows } from 'helpers/agencyV2/StatusOfFundsVizHelper';
+import { useStateWithPrevious } from 'helpers';
 import BaseStatusOfFundsLevel from 'models/v2/agency/BaseStatusOfFundsLevel';
+import Note from 'components/sharedComponents/Note';
 import DrilldownSidebar from './DrilldownSidebar';
 import VisualizationSection from './VisualizationSection';
 import IntroSection from './IntroSection';
-import StatusOfFundsNotes from './StatusOfFundsNotes';
 
 const propTypes = {
     fy: PropTypes.string
@@ -20,116 +24,194 @@ const propTypes = {
 
 export const levels = ['Sub-Component', 'Federal Account'];
 
-// TODO: Replace mock data with API response once endpoints are available
-export const mockChartData = {
-    page_metadata: {
-        page: 1,
-        total: 1,
-        limit: 2,
-        next: 2,
-        previous: null,
-        hasNext: true,
-        hasPrevious: false
-    },
-    results: [
-        {
-            name: "National Oceanic and Atmospheric Administration",
-            total_budgetary_resources: 8000000000,
-            total_obligations: 6000000000
-        },
-        {
-            name: "Bureau of the Census",
-            total_budgetary_resources: 4400000000,
-            total_obligations: 2500000000
-        },
-        {
-            name: "U.S. Patent and Trademark Office",
-            total_budgetary_resources: 4200000000,
-            total_obligations: 2700000000
-        },
-        {
-            name: "Economic Development Administration",
-            total_budgetary_resources: 4150000000,
-            total_obligations: 1300000000
-        },
-        {
-            name: "National Telecommunications and Information Administration",
-            total_budgetary_resources: 2100000000,
-            total_obligations: 50000000
-        },
-        {
-            name: "National Institute of Standards and Technology",
-            total_budgetary_resources: 1900000000,
-            total_obligations: 1560000000
-        },
-        {
-            name: "International Trade Administration",
-            total_budgetary_resources: 1010000000,
-            total_obligations: 960000000
-        },
-        {
-            name: "Departmental Management",
-            total_budgetary_resources: 100500000,
-            total_obligations: 905000000
-        },
-        {
-            name: "Bureau of Industry and Security",
-            total_budgetary_resources: 10500000,
-            total_obligations: 9050000
-        },
-        {
-            name: "Bureau of Economic Analysis",
-            total_budgetary_resources: 5000000,
-            total_obligations: 4000000
-        }
-    ]
-};
-
 const StatusOfFunds = ({ fy }) => {
     const dispatch = useDispatch();
     const [level, setLevel] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
+    const [resetPageChange, setResetPageChange] = useState(false);
+    const [subcomponent, setSubcomponent] = useState({});
+    const [prevPage, currentPage, changeCurrentPage] = useStateWithPrevious(1);
+    const [pageSize, changePageSize] = useStateWithPrevious(10);
+    const [totalItems, setTotalItems] = useState(0);
+    const request = useRef(null);
+    const [results, setResults] = useState([]);
     const { overview, selectedSubcomponent } = useSelector((state) => state.agencyV2);
-    // TODO - remove mock data when DEV-8052 is implemented
-    const mockData = {
-        name: "Bureau of the Census",
-        id: "bureau_of_the_census",
-        total_budgetary_resources: 5000000,
-        total_obligations: 3000000.72
+
+    useEffect(() => {
+        if (request.current) {
+            request.current.cancel();
+        }
+        dispatch(resetAgencySubcomponents());
+        dispatch(resetFederalAccountsList());
+    }, []);
+
+    const fetchAgencySubcomponents = () => {
+        if (request.current) {
+            request.current.cancel();
+        }
+        if (error) {
+            setError(false);
+        }
+        if (!loading) {
+            setLoading(true);
+        }
+        const params = {
+            limit: pageSize,
+            page: currentPage
+        };
+        request.current = fetchSubcomponentsList(overview.toptierCode, fy, params.page);
+        const agencySubcomponentsListRequest = request.current;
+        agencySubcomponentsListRequest.promise
+            .then((res) => {
+                const parsedData = parseRows(res.data.results);
+                setResults(parsedData);
+                dispatch(setAgencySubcomponents(parsedData));
+                setTotalItems(res.data.page_metadata.total);
+                setLoading(false);
+            }).catch((err) => {
+                setError(true);
+                setLoading(false);
+                console.error(err);
+            });
     };
-    const onClick = (selectedLevel, data = mockData) => {
-        // TODO DEV-8052 move this logic to the visualization
-        const subcomponent = Object.create(BaseStatusOfFundsLevel);
-        subcomponent.populate(data);
-        dispatch(setSelectedSubcomponent(subcomponent));
-        setLevel(selectedLevel);
+
+    const fetchFederalAccounts = (agencyData) => {
+        if (request.current) {
+            request.current.cancel();
+        }
+        if (error) {
+            setError(false);
+        }
+        if (!loading) {
+            setLoading(true);
+        }
+        const params = {
+            limit: pageSize,
+            page: currentPage
+        };
+        request.current = fetchFederalAccountsList(overview.toptierCode, agencyData.id, fy, params.page);
+        const federalAccountsRequest = request.current;
+        federalAccountsRequest.promise
+            .then((res) => {
+                const parsedData = parseRows(res.data.results);
+                const totalsData = {
+                    name: `${agencyData.name}`,
+                    id: `${agencyData.id}`,
+                    total_budgetary_resources: `${agencyData.budgetaryResources}`,
+                    total_obligations: `${agencyData.obligations}`
+                };
+                setLevel(1, totalsData);
+                setResults(parsedData);
+                dispatch(setFederalAccountsList(parsedData));
+                setTotalItems(res.data.page_metadata.total);
+                setLoading(false);
+            }).catch((err) => {
+                setError(true);
+                setLoading(false);
+                console.error(err);
+            });
+    };
+
+    useEffect(() => {
+        if (Object.keys(subcomponent).length !== 0) {
+            fetchFederalAccounts(subcomponent);
+        }
+    }, [subcomponent]);
+
+    useEffect(() => {
+        if (resetPageChange) {
+            setResetPageChange(false);
+        } else {
+            if (prevPage !== currentPage && level === 0) {
+                fetchAgencySubcomponents();
+            }
+            if (prevPage !== currentPage && level === 1) {
+                fetchFederalAccounts(subcomponent);
+            }
+        }
+    }, [currentPage]);
+
+    useEffect(() => {
+        if (resetPageChange) {
+            setLoading(true);
+            if (currentPage === 1) {
+                setResetPageChange(false);
+            } else {
+                changeCurrentPage(1);
+            }
+        }
+    }, [resetPageChange]);
+
+    useEffect(() => {
+        if (fy && overview.toptierCode) {
+            fetchAgencySubcomponents();
+        }
+    }, [fy, overview.toptierCode]);
+
+    const onClick = (selectedLevel, data) => {
+        // reset to page 1 on drilldown
+        setResetPageChange(true);
+        const subcomponentTotalData = Object.create(BaseStatusOfFundsLevel);
+        subcomponentTotalData.populate(data);
+        dispatch(setSelectedSubcomponent(subcomponentTotalData));
+        setSubcomponent(subcomponentTotalData);
+    };
+    const goBack = () => {
+        if (overview.toptierCode) {
+            setLevel(0);
+            fetchAgencySubcomponents();
+            if (currentPage === 1) {
+                setResetPageChange(false);
+            } else {
+                changeCurrentPage(1);
+            }
+        }
     };
     return (
         <div className="body__content status-of-funds">
-            <FlexGridContainer>
-                <FlexGridRow hasGutter>
-                    <FlexGridCol desktop={{ span: 10, offset: 1 }}>
-                        <IntroSection name={overview.name} fy={fy} />
-                    </FlexGridCol>
-                </FlexGridRow>
-                <FlexGridRow hasGutter>
-                    <FlexGridCol className="status-of-funds__drilldown-sidebar" tablet={3}>
-                        <DrilldownSidebar
-                            level={level}
-                            setLevel={onClick}
-                            agencyName={overview.name}
-                            fy={fy}
-                            selectedSubcomponent={selectedSubcomponent} />
-                    </FlexGridCol>
-                    <FlexGridCol className="status-of-funds__visualization" tablet={9}>
-                        <VisualizationSection level={level} agencyId={overview.toptierCode} agencyName={overview.name} fy={fy} data={mockChartData} />
-                    </FlexGridCol>
-                </FlexGridRow>
-                <FlexGridRow hasGutter>
-                    <FlexGridCol>
-                        <StatusOfFundsNotes />
-                    </FlexGridCol>
-                </FlexGridRow>
-            </FlexGridContainer>
+            <IntroSection name={overview.name} fy={fy} totalItems={totalItems} />
+            <FlexGridRow hasGutter>
+                <FlexGridCol className="status-of-funds__drilldown-sidebar" desktop={3}>
+                    <DrilldownSidebar
+                        level={level}
+                        setLevel={onClick}
+                        agencyName={overview.name}
+                        fy={fy}
+                        selectedSubcomponent={selectedSubcomponent} />
+                </FlexGridCol>
+                <FlexGridCol className="status-of-funds__visualization" desktop={9}>
+                    {level === 1 ?
+                        <button title="Go up a level" className="drilldown-back-button" onClick={goBack}>
+                            <FontAwesomeIcon icon="arrow-left" />
+                            &nbsp;&nbsp;Back
+                        </button> : <></>}
+                    { !loading ? <VisualizationSection fetchFederalAccounts={fetchFederalAccounts} totalItems={totalItems} setTotalItems={setTotalItems} loading={loading} setLoading={setLoading} level={level} setLevel={onClick} selectedSubcomponent={selectedSubcomponent} agencyId={overview.toptierCode} agencyName={overview.name} fy={fy} results={results} /> : <LoadingMessage /> }
+                    <Pagination
+                        currentPage={currentPage}
+                        changePage={changeCurrentPage}
+                        changeLimit={changePageSize}
+                        resultsText
+                        pageSize={10}
+                        totalItems={totalItems} />
+                </FlexGridCol>
+            </FlexGridRow>
+            <Note message={
+                (<>The agency sub-components displayed in this section were
+                    added to provide greater transparency into the organization of agencies’
+                    account data. These sub-components are based on the Bureau associated
+                    with a federal account in OMB’s Master Accounts Title file.
+                    Sub-components are identified using Agency Identifier (AID) codes.
+                    Department of Defense (DoD) sub-components
+                    correspond to the branches of the Armed Forces and accounts for the
+                    agency are attributed to the appropriate branch/sub-component based on
+                    the Agency Codes found at the bottom of{ ' ' }
+                    <a
+                        href="https://www.whitehouse.gov/wp-content/uploads/2018/06/app_c.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer">
+                        OMB Circular A-11 Appendix C
+                    </a>.</>)} />
         </div>
     );
 };

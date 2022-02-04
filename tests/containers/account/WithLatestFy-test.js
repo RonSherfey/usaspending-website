@@ -16,7 +16,7 @@ import * as redux from 'react-redux';
 
 import { waitFor } from 'test-utils';
 
-import * as helper from 'helpers/accountHelper';
+import * as helper from 'apis/account';
 import * as queryParamHelpers from 'helpers/queryParams';
 import * as actions from 'redux/actions/account/accountActions';
 import * as hooks from 'containers/account/WithLatestFy';
@@ -70,7 +70,8 @@ test.each([
     ['0000', '0', 2020, 12, ['fy', 'period']],
     [null, null, 2020, 12, ['fy', 'period']],
     ['2021', '0', 2020, 12, ['fy', 'period']],
-    ['2012', '14', 2020, 12, ['fy', 'period']]
+    ['2012', '14', 2020, 12, ['fy', 'period']],
+    ['2021cats', 'toast', 2020, 12, ['fy', 'period']]
 ])(
     'useValidTimeBasedQueryParams: when fy is %s and period is %s, URL is updated 👌👌👌',
     (currentFy, currentPeriod, latestFy, latestPeriod, requiredParams) => {

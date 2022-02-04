@@ -6,35 +6,46 @@
 // eslint-disable-next-line no-unused-vars
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Pagination } from 'data-transparency-ui';
 import { levels } from './StatusOfFunds';
 import StatusOfFundsChart from '../visualizations/StatusOfFundsChart';
 
 const propTypes = {
-    level: PropTypes.number,
-    agencyId: PropTypes.string,
+    level: PropTypes.number.isRequired,
+    setLevel: PropTypes.func,
+    loading: PropTypes.bool,
+    setLoading: PropTypes.func,
+    totalItems: PropTypes.number,
+    setTotalItems: PropTypes.func,
     agencyName: PropTypes.string,
     fy: PropTypes.string,
-    data: PropTypes.object
+    results: PropTypes.array,
+    fetchFederalAccounts: PropTypes.func,
+    selectedSubcomponent: PropTypes.shape({
+        name: PropTypes.string,
+        id: PropTypes.string,
+        budgetaryResources: PropTypes.string,
+        obligations: PropTypes.string
+    })
 };
 
 const VisualizationSection = ({
+    loading,
+    setLoading,
     level,
+    setLevel,
+    totalItems,
+    setTotalItems,
     agencyName,
     fy,
-    data
+    results,
+    selectedSubcomponent,
+    fetchFederalAccounts
 }) => (
     <div className="status-of-funds__visualization">
-        <h6>{agencyName} by <strong>{levels[level]}</strong> for FY {fy}</h6>
-        <div>
-            <StatusOfFundsChart data={data} />
+        <h6>{level === 1 ? selectedSubcomponent?.name : agencyName} by <strong>{levels[level]}</strong> for FY {fy}</h6>
+        <div className="status-of-funds__visualization-chart">
+            <StatusOfFundsChart fetchFederalAccounts={fetchFederalAccounts} totalItems={totalItems} setTotalItems={setTotalItems} loading={loading} setLoading={setLoading} fy={fy} results={results} level={level} setLevel={setLevel} />
         </div>
-        <Pagination // TODO: replace mock props data with pagination data from API when endpoints are available
-            resultsText
-            changePage={() => {}}
-            currentPage={1}
-            pageSize={10}
-            totalItems={12} />
     </div>
 );
 
